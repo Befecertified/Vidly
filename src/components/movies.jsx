@@ -1,10 +1,14 @@
 import React, { Component } from "react";
 import { getMovies } from "../services/fakeMovieService.js";
 import Favorite from "./common/favorite";
+import Pagination from "./common/pagination";
+import paginate from "../utils/paginate";
 
 class Movies extends Component {
   state = {
-    movies: getMovies()
+    movies: getMovies(),
+    moviesPerPage: 4,
+    currentPage: 1
   };
 
   handleDelete = movie => {
@@ -20,8 +24,15 @@ class Movies extends Component {
     this.setState({ movies });
   };
 
+  handlePageChange = page => {
+    this.setState({ currentPage: page });
+  };
+
   renderMoviesOnTable = () => {
-    return this.state.movies.map(movie => (
+    const { movies: allMovies, currentPage, moviesPerPage } = this.state;
+    const movies = paginate(allMovies, currentPage, moviesPerPage);
+
+    return movies.map(movie => (
       <tr key={movie._id}>
         <td>{movie.title}</td>
         <td>{movie.genre.name}</td>
@@ -47,6 +58,7 @@ class Movies extends Component {
 
   render() {
     const { length: counter } = this.state.movies;
+    const { currentPage, moviesPerPage } = this.state;
 
     if (counter === 0)
       return <h5 className="m-3"> There are no movies in the database. </h5>;
@@ -66,6 +78,12 @@ class Movies extends Component {
           </thead>
           <tbody>{this.renderMoviesOnTable()}</tbody>
         </table>
+        <Pagination
+          numOfMovies={counter}
+          currentPage={currentPage}
+          moviesPerPage={moviesPerPage}
+          onPageChange={this.handlePageChange}
+        />
       </React.Fragment>
     );
   }
